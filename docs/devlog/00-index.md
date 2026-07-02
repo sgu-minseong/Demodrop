@@ -7,8 +7,8 @@
 | 단계 | 파일 | 주제 | 상태 |
 | --- | --- | --- | --- |
 | 01 | [01-project-init.md](./01-project-init.md) | 프로젝트 초기화 | 작성 완료 |
-| 02 | 02-product-scope.md | MVP 범위 확정 | 예정 |
-| 03 | 03-ui-shell.md | 기본 UI 쉘 구성 | 예정 |
+| 02 | [02-static-mvp-screens.md](./02-static-mvp-screens.md) | MVP 정적 화면 구현 | 작성 완료 |
+| 03 | [03-supabase-client-setup.md](./03-supabase-client-setup.md) | Supabase client/admin 연결 골격 | 작성 완료 |
 | 04 | 04-supabase-setup.md | Supabase 프로젝트 및 환경 변수 설정 | 예정 |
 | 05 | 05-auth-flow.md | 인증 흐름 구현 | 예정 |
 | 06 | 06-demo-upload.md | 데모 업로드 흐름 구현 | 예정 |
