@@ -696,29 +696,52 @@ export default function NewDemoPage() {
                   <h2 className="text-lg font-semibold">Your demo is ready.</h2>
                 </div>
 
-                <div className="mt-4 space-y-3">
+                <div className="mt-4 grid gap-4">
                   <ResultLink
                     label="Public link"
-                    description="Share this with other people."
+                    description="Share this link so others can watch your demo and leave feedback."
                     href={readyDemo.publicUrl}
                     onCopy={() => copyText("public", readyDemo.publicUrl)}
                     copied={copied === "public"}
                   />
-                  <ResultLink
-                    label="Manage link"
-                    description="Use this to view your report."
-                    href={readyDemo.manageUrl}
-                    onCopy={() => copyText("manage", readyDemo.manageUrl)}
-                    copied={copied === "manage"}
-                  />
-                </div>
 
-                <div className="mt-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-                  <AlertTriangle size={17} className="mt-0.5 shrink-0" />
-                  <p>
-                    Save your manage link. Anyone with this link can view your
-                    report.
-                  </p>
+                  <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 text-amber-900">
+                          <AlertTriangle size={18} className="shrink-0" />
+                          <p className="text-sm font-semibold">Manage link</p>
+                        </div>
+                        <p className="mt-2 text-sm font-medium text-amber-950">
+                          Your private report and management link.
+                        </p>
+                        <div className="mt-3 rounded-md border border-red-200 bg-white p-3 text-sm font-semibold text-red-800">
+                          <p>
+                            Save this manage link. Anyone with this link can view
+                            your report.
+                          </p>
+                          <p className="mt-1">
+                            In this MVP, you cannot recover this link if you lose
+                            it.
+                          </p>
+                        </div>
+                        <a
+                          href={readyDemo.manageUrl}
+                          className="mt-3 block break-all text-sm font-medium text-amber-950 underline decoration-amber-700 underline-offset-4"
+                        >
+                          {readyDemo.manageUrl}
+                        </a>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => copyText("manage", readyDemo.manageUrl)}
+                        className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-amber-400 bg-white px-3 text-sm font-medium text-amber-950 hover:bg-amber-100"
+                      >
+                        <Copy size={16} />
+                        {copied === "manage" ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <button
