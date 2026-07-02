@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
+import { normalizeSupabaseUrl } from "./url";
 
 function getRequiredServerEnv(name: string): string {
   const value = process.env[name];
@@ -15,7 +16,9 @@ function getRequiredServerEnv(name: string): string {
 }
 
 export function createSupabaseAdminClient() {
-  const supabaseUrl = getRequiredServerEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const supabaseUrl = normalizeSupabaseUrl(
+    getRequiredServerEnv("NEXT_PUBLIC_SUPABASE_URL"),
+  );
   const serviceRoleKey = getRequiredServerEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   return createClient(supabaseUrl, serviceRoleKey, {

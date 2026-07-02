@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { normalizeSupabaseUrl } from "./url";
 
 function getRequiredPublicEnv(name: string): string {
   const value = process.env[name];
@@ -13,7 +14,9 @@ function getRequiredPublicEnv(name: string): string {
 }
 
 export function createBrowserSupabaseClient() {
-  const supabaseUrl = getRequiredPublicEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const supabaseUrl = normalizeSupabaseUrl(
+    getRequiredPublicEnv("NEXT_PUBLIC_SUPABASE_URL"),
+  );
   const supabaseAnonKey = getRequiredPublicEnv(
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   );
