@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Play } from "lucide-react";
+import { Play } from "lucide-react";
 
 import { getDemoBucketName } from "@/lib/demos/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { FeedbackForm } from "./feedback-form";
+import {
+  DemoViewTracker,
+  TrackedProductLink,
+  TrackedVideo,
+} from "./event-tracking";
 
 type PublicDemo = {
+  id: string;
   product_name: string | null;
   tagline: string | null;
   product_url: string | null;
@@ -33,7 +39,7 @@ export default async function PublicDemoPage({
 
   const { data: demo, error } = await supabaseAdmin
     .from("demos")
-    .select("product_name, tagline, product_url, status, video_path")
+    .select("id, product_name, tagline, product_url, status, video_path")
     .eq("slug", slug)
     .maybeSingle<PublicDemo>();
 
@@ -67,6 +73,7 @@ export default async function PublicDemoPage({
 
   return (
     <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
+      <DemoViewTracker demoId={demo.id} slug={slug} />
       <div className="mx-auto w-full max-w-5xl px-5 py-5 sm:px-8">
         <header className="flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold tracking-tight">
@@ -91,30 +98,22 @@ export default async function PublicDemoPage({
             </p>
 
             <div className="mt-6 rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
-              <video
-                className="aspect-video min-h-56 w-full rounded-md bg-stone-950"
-                src={signedVideo.signedUrl}
-                controls
-                playsInline
-                preload="metadata"
-              >
-                Your browser does not support the video tag.
-              </video>
+              <TrackedVideo
+                demoId={demo.id}
+                slug={slug}
+                signedVideoUrl={signedVideo.signedUrl}
+              />
             </div>
           </div>
 
           <aside className="space-y-4">
             <FeedbackForm slug={slug} />
 
-            <a
-              href={demo.product_url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex h-12 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800"
-            >
-              Visit product
-              <ArrowUpRight size={17} />
-            </a>
+            <TrackedProductLink
+              demoId={demo.id}
+              slug={slug}
+              productUrl={demo.product_url}
+            />
 
             <Link
               href="/new"
