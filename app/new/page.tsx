@@ -71,12 +71,19 @@ const launchPostText =
   "I made a 60-sec demo of my side project. Can you tell me if it's clear?";
 const recordingGuide =
   "Open your product in another tab. Click Start recording. Select that tab in the browser popup.";
+const privacyRecordingWarning =
+  "Check that passwords, API keys, and private user data are not visible before recording.";
+const desktopRecordingGuidance =
+  "Mobile browsers may limit screen recording. For best results, use desktop Chrome or Edge.";
+const unsupportedRecordingMessage =
+  "Screen recording works best on desktop Chrome or Edge.";
 const recordingMimeTypes = [
   "video/webm;codecs=vp9",
   "video/webm;codecs=vp8",
   "video/webm",
 ];
 const maxRecordingSeconds = 60;
+const maxVideoBytes = 250 * 1024 * 1024;
 
 export default function NewDemoPage() {
   const [productName, setProductName] = useState("");
@@ -103,6 +110,7 @@ export default function NewDemoPage() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewUrlRef = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const recordingSessionRef = useRef(0);
   const finalizingRecordingRef = useRef(false);
   const countdownRejectRef = useRef<((error: Error) => void) | null>(null);
@@ -137,8 +145,42 @@ export default function NewDemoPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    const productNameError = getRequiredFieldError(
+      productName,
+      "Enter a product name.",
+    );
+
+    if (productNameError) {
+      setError(productNameError);
+      return;
+    }
+
+    const taglineError = getRequiredFieldError(
+      tagline,
+      "Enter a one-line description.",
+    );
+
+    if (taglineError) {
+      setError(taglineError);
+      return;
+    }
+
+    const productUrlError = getProductUrlError(productUrl);
+
+    if (productUrlError) {
+      setError(productUrlError);
+      return;
+    }
+
     if (!uploadVideo) {
       setError("Record a video or choose a video file before creating your demo.");
+      return;
+    }
+
+    const videoError = getUploadVideoError(uploadVideo);
+
+    if (videoError) {
+      setError(videoError);
       return;
     }
 
@@ -184,7 +226,7 @@ export default function NewDemoPage() {
   async function startRecording() {
     if (!navigator.mediaDevices?.getDisplayMedia || !window.MediaRecorder) {
       setRecordingError(
-        "Screen recording is not supported in this browser. Try Chrome or Edge.",
+        `${unsupportedRecordingMessage} ${desktopRecordingGuidance}`,
       );
       return;
     }
@@ -342,11 +384,19 @@ export default function NewDemoPage() {
       return;
     }
 
-    setUploadVideo({
+    const recordedVideo = {
       blob: recordedPreview.blob,
       name: "screen-recording.webm",
-      source: "recording",
-    });
+      source: "recording" as const,
+    };
+    const videoError = getUploadVideoError(recordedVideo);
+
+    if (videoError) {
+      setError(videoError);
+      return;
+    }
+
+    setUploadVideo(recordedVideo);
     setError("");
   }
 
@@ -369,8 +419,22 @@ export default function NewDemoPage() {
       return;
     }
 
-    setUploadVideo({ blob: file, name: file.name, source: "file" });
+    const selectedVideo = { blob: file, name: file.name, source: "file" as const };
+    const videoError = getUploadVideoError(selectedVideo);
+
+    if (videoError) {
+      setUploadVideo(null);
+      setError(videoError);
+      event.target.value = "";
+      return;
+    }
+
+    setUploadVideo(selectedVideo);
     setError("");
+  }
+
+  function openFilePicker() {
+    fileInputRef.current?.click();
   }
 
   async function copyText(label: string, text: string) {
@@ -463,7 +527,9 @@ export default function NewDemoPage() {
     ? uploadVideo.source === "recording"
       ? "Screen recording selected"
       : uploadVideo.name
-    : "No video selected";
+    : "No file selected";
+  const selectedFileLabel =
+    uploadVideo?.source === "file" ? uploadVideo.name : "No file selected";
 
   return (
     <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
@@ -490,7 +556,7 @@ export default function NewDemoPage() {
               Record a 60-second walkthrough, then upload it as a public demo.
             </p>
 
-            <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+            <form className="mt-8 space-y-4" onSubmit={handleSubmit} noValidate>
               <Field
                 label="Product name"
                 name="productName"
@@ -511,7 +577,6 @@ export default function NewDemoPage() {
                 label="Product URL"
                 name="productUrl"
                 placeholder="https://example.com"
-                type="url"
                 value={productUrl}
                 onChange={setProductUrl}
                 disabled={isUploading}
@@ -532,18 +597,34 @@ export default function NewDemoPage() {
                   </div>
                 </div>
 
-                <label className="mt-4 block">
-                  <span className="text-sm font-medium text-stone-700">
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-stone-700">
                     Or choose a video file
-                  </span>
+                  </p>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="video/webm,video/mp4,video/quicktime,.webm,.mp4,.mov"
-                    className="mt-2 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-stone-950 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white disabled:cursor-not-allowed disabled:bg-stone-100"
+                    className="sr-only"
                     disabled={isUploading || isRecordingBusy}
                     onChange={handleFileChange}
+                    aria-label="Choose video file"
                   />
-                </label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={openFilePicker}
+                      disabled={isUploading || isRecordingBusy}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 text-sm font-medium text-stone-800 hover:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100"
+                    >
+                      <FileVideo size={17} />
+                      Choose video file
+                    </button>
+                    <p className="min-w-0 break-all text-sm text-stone-500">
+                      {selectedFileLabel}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {error ? (
@@ -572,6 +653,10 @@ export default function NewDemoPage() {
                   <p className="mt-1 max-w-xl text-sm leading-6 text-stone-500">
                     {recordingGuide}
                   </p>
+                  <div className="mt-3 max-w-xl rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
+                    <p className="font-semibold">{privacyRecordingWarning}</p>
+                    <p className="mt-1">{desktopRecordingGuidance}</p>
+                  </div>
                 </div>
                 <RecordingBadge
                   recordingState={recordingState}
@@ -784,7 +869,6 @@ function Field({
   label,
   name,
   placeholder,
-  type = "text",
   value,
   onChange,
   disabled,
@@ -792,7 +876,6 @@ function Field({
   label: string;
   name: string;
   placeholder: string;
-  type?: "text" | "url";
   value: string;
   onChange: (value: string) => void;
   disabled: boolean;
@@ -802,13 +885,12 @@ function Field({
       <span className="text-sm font-medium text-stone-700">{label}</span>
       <input
         name={name}
-        type={type}
+        type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 h-12 w-full rounded-md border border-stone-300 bg-white px-3 text-base outline-none transition placeholder:text-stone-400 focus:border-teal-700 focus:ring-4 focus:ring-teal-100 disabled:cursor-not-allowed disabled:bg-stone-100"
         placeholder={placeholder}
         disabled={disabled}
-        required
       />
     </label>
   );
@@ -896,17 +978,24 @@ function ResultLink({
 }
 
 async function postJson<T>(url: string, payload: Record<string, string>) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const data = await response.json();
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new Error("Network error. Check your connection and try again.");
+  }
+
+  const data = await readJsonSafely(response);
 
   if (!response.ok) {
-    throw new Error(getApiErrorMessage(data));
+    throw new Error(getApiErrorMessage(data, response.status));
   }
 
   return data as T;
@@ -921,15 +1010,86 @@ async function uploadToSignedUrl(
   formData.append("cacheControl", "3600");
   formData.append("", blob, fileName);
 
-  const response = await fetch(signedUrl, {
-    method: "PUT",
-    body: formData,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(signedUrl, {
+      method: "PUT",
+      body: formData,
+    });
+  } catch {
+    throw new Error(
+      "Network error while uploading. Check your connection and try again.",
+    );
+  }
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to upload video to Storage.");
+    throw new Error(
+      response.status === 413
+        ? `This video is too large. Keep it under ${formatFileSize(
+            maxVideoBytes,
+          )} by recording a shorter demo or compressing the file.`
+        : "Video upload failed. Try again, or choose a smaller video file.",
+    );
   }
+}
+
+async function readJsonSafely(response: Response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function getProductUrlError(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return "Enter a valid product URL, including https://.";
+  }
+
+  try {
+    const url = new URL(trimmedValue);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return "Enter a valid product URL, including https://.";
+    }
+  } catch {
+    return "Enter a valid product URL, including https://.";
+  }
+
+  return "";
+}
+
+function getRequiredFieldError(value: string, message: string) {
+  return value.trim() ? "" : message;
+}
+
+function getUploadVideoError(video: UploadVideo) {
+  if (video.blob.size > maxVideoBytes) {
+    return `This video is too large (${formatFileSize(
+      video.blob.size,
+    )}). Keep it under ${formatFileSize(
+      maxVideoBytes,
+    )} by recording a shorter demo or compressing the file.`;
+  }
+
+  if (!getVideoType(video.blob, video.name)) {
+    return "Choose a WebM, MP4, or MOV video file.";
+  }
+
+  return "";
+}
+
+function formatFileSize(bytes: number) {
+  const megabytes = bytes / (1024 * 1024);
+
+  if (megabytes >= 10) {
+    return `${Math.round(megabytes)} MB`;
+  }
+
+  return `${megabytes.toFixed(1)} MB`;
 }
 
 function getVideoType(blob: Blob, fileName: string) {
@@ -962,12 +1122,12 @@ function getRecordingErrorMessage(error: unknown, microphoneEnabled: boolean) {
   if (error instanceof DOMException) {
     if (error.name === "NotAllowedError") {
       return microphoneEnabled
-        ? "Screen or microphone access was blocked. Turn Mic off or allow access, then try again."
-        : "Screen sharing was cancelled. Click Start recording again and choose your product tab when the browser asks.";
+        ? "Screen or microphone access was blocked. Turn Mic off or allow access, then try again. Screen recording works best on desktop Chrome or Edge."
+        : "Screen sharing was cancelled. Click Start recording again and choose your product tab in the browser popup. Screen recording works best on desktop Chrome or Edge.";
     }
 
     if (error.name === "NotFoundError") {
-      return "No screen or window was available to record.";
+      return "No screen or window was available to record. Open your product in another tab and try again on desktop Chrome or Edge.";
     }
   }
 
@@ -975,10 +1135,10 @@ function getRecordingErrorMessage(error: unknown, microphoneEnabled: boolean) {
     return error.message;
   }
 
-  return "Recording failed. Try again and choose your product tab in the browser popup.";
+  return "Recording failed. Try again and choose your product tab in the browser popup. Screen recording works best on desktop Chrome or Edge.";
 }
 
-function getApiErrorMessage(data: unknown) {
+function getApiErrorMessage(data: unknown, status: number) {
   if (
     data &&
     typeof data === "object" &&
@@ -988,8 +1148,24 @@ function getApiErrorMessage(data: unknown) {
     "message" in data.error &&
     typeof data.error.message === "string"
   ) {
+    if ("code" in data.error && data.error.code === "storage_error") {
+      return "Storage could not prepare the upload. Try again in a moment.";
+    }
+
+    if ("code" in data.error && data.error.code === "database_error") {
+      return "Supabase could not save your demo. Try again in a moment.";
+    }
+
+    if (status >= 500) {
+      return "Supabase or the server did not respond correctly. Try again in a moment.";
+    }
+
     return data.error.message;
   }
 
-  return "Request failed.";
+  if (status >= 500) {
+    return "Supabase or the server did not respond correctly. Try again in a moment.";
+  }
+
+  return "Request failed. Check your inputs and try again.";
 }
