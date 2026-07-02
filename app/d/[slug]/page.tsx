@@ -5,6 +5,7 @@ import { ArrowUpRight, Play } from "lucide-react";
 
 import { getDemoBucketName } from "@/lib/demos/api";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { FeedbackForm } from "./feedback-form";
 
 type PublicDemo = {
   product_name: string | null;
@@ -79,7 +80,7 @@ export default async function PublicDemoPage({
           </Link>
         </header>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
+        <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div>
             <p className="text-sm font-medium text-teal-700">Public demo</p>
             <h1 className="mt-2 text-4xl font-semibold tracking-normal sm:text-5xl">
@@ -103,6 +104,8 @@ export default async function PublicDemoPage({
           </div>
 
           <aside className="space-y-4">
+            <FeedbackForm slug={slug} />
+
             <a
               href={demo.product_url}
               target="_blank"
