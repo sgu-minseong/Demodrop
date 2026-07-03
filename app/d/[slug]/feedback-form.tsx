@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CheckCircle2, Send } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 
 type FeedbackFormProps = {
   slug: string;
@@ -28,6 +28,7 @@ const objectionOptions = [
 
 export function FeedbackForm({ slug }: FeedbackFormProps) {
   const storageKey = useMemo(() => `demodrop.feedback.${slug}`, [slug]);
+  const submitInFlightRef = useRef(false);
   const [clarity, setClarity] = useState("");
   const [tryIntent, setTryIntent] = useState("");
   const [confusingArea, setConfusingArea] = useState("");
@@ -44,6 +45,10 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
   const [error, setError] = useState("");
 
   async function submitFeedback() {
+    if (submitInFlightRef.current || status !== "idle") {
+      return;
+    }
+
     setError("");
 
     if (!clarity || !tryIntent || !confusingArea || !objection) {
@@ -51,10 +56,7 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
       return;
     }
 
-    if (status === "submitted") {
-      return;
-    }
-
+    submitInFlightRef.current = true;
     setStatus("submitting");
 
     try {
@@ -88,6 +90,8 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
           ? caughtError.message
           : "Could not submit feedback.",
       );
+    } finally {
+      submitInFlightRef.current = false;
     }
   }
 
@@ -165,8 +169,12 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
           disabled={status === "submitting"}
           className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-4 text-sm font-medium text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
         >
-          <Send size={16} />
-          {status === "submitting" ? "Submitting..." : "Send feedback"}
+          {status === "submitting" ? (
+            <LoaderCircle size={16} className="spin-loading" />
+          ) : (
+            <Send size={16} />
+          )}
+          {status === "submitting" ? "Sending..." : "Send feedback"}
         </button>
       </div>
     </div>

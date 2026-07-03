@@ -10,6 +10,7 @@ import {
   Clipboard,
   Copy,
   FileVideo,
+  LoaderCircle,
   Mic,
   MonitorUp,
   RotateCcw,
@@ -111,6 +112,7 @@ export default function NewDemoPage() {
   const autoStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewUrlRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadInFlightRef = useRef(false);
   const recordingSessionRef = useRef(0);
   const finalizingRecordingRef = useRef(false);
   const countdownRejectRef = useRef<((error: Error) => void) | null>(null);
@@ -144,6 +146,10 @@ export default function NewDemoPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (uploadInFlightRef.current) {
+      return;
+    }
 
     const productNameError = getRequiredFieldError(
       productName,
@@ -184,6 +190,7 @@ export default function NewDemoPage() {
       return;
     }
 
+    uploadInFlightRef.current = true;
     setStatus("uploading");
     setError("");
     setCopied("");
@@ -220,6 +227,8 @@ export default function NewDemoPage() {
           ? caughtError.message
           : "Failed to upload your demo.",
       );
+    } finally {
+      uploadInFlightRef.current = false;
     }
   }
 
@@ -639,7 +648,11 @@ export default function NewDemoPage() {
                 disabled={isUploading || isRecordingBusy}
                 className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-5 text-base font-medium text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400 sm:w-auto"
               >
-                <Upload size={18} />
+                {isUploading ? (
+                  <LoaderCircle size={18} className="spin-loading" />
+                ) : (
+                  <Upload size={18} />
+                )}
                 {isUploading ? "Uploading your demo..." : "Create demo"}
               </button>
             </form>

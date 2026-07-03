@@ -24,3 +24,46 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button,
+a[href] {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: transform, background-color, border-color, color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+button:not(:disabled):active,
+a[href]:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  transform: none;
+}
+
+.spin-loading {
+  animation: spin-loading 0.8s linear infinite;
+}
+
+@keyframes spin-loading {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a[href] {
+    transition-duration: 0ms;
+  }
+
+  button:not(:disabled):active,
+  a[href]:active {
+    transform: none;
+  }
+
+  .spin-loading {
+    animation: none;
+  }
+}
