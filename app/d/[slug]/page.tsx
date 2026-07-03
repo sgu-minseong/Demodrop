@@ -72,16 +72,16 @@ export default async function PublicDemoPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
+    <main className="app-shell">
       <DemoViewTracker demoId={demo.id} slug={slug} />
-      <div className="mx-auto w-full max-w-5xl px-5 py-5 sm:px-8">
+      <div className="app-container max-w-5xl">
         <header className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href="/" className="brand-logo">
             Demodrop
           </Link>
           <Link
             href="/new"
-            className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            className="btn-primary h-10 px-4 text-sm"
           >
             Create demo
           </Link>
@@ -89,15 +89,15 @@ export default async function PublicDemoPage({
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div>
-            <p className="text-sm font-medium text-teal-700">Public demo</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-normal sm:text-5xl">
+            <p className="page-eyebrow">Public demo</p>
+            <h1 className="page-title mt-2">
               {demo.product_name}
             </h1>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-stone-600">
+            <p className="body-copy mt-3 max-w-2xl text-lg">
               {demo.tagline}
             </p>
 
-            <div className="mt-6 rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
+            <div className="surface-card mt-6 p-3">
               <TrackedVideo
                 demoId={demo.id}
                 slug={slug}
@@ -117,15 +117,15 @@ export default async function PublicDemoPage({
 
             <Link
               href="/new"
-              className="flex min-h-28 flex-col justify-center rounded-lg border border-stone-200 bg-white p-4 shadow-sm hover:border-teal-700"
+              className="surface-card flex min-h-28 flex-col justify-center p-4 hover:border-[#A3FF12]"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-stone-950 text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[#A3FF12] text-[#101412]">
                 <Play size={18} fill="currentColor" />
               </span>
-              <span className="mt-3 text-base font-semibold">
+              <span className="mt-3 text-base font-bold text-[#101412]">
                 Made with Demodrop
               </span>
-              <span className="mt-1 text-sm leading-6 text-stone-500">
+              <span className="muted-copy mt-1">
                 Create a shareable demo and collect launch feedback.
               </span>
             </Link>

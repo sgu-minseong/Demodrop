@@ -3,15 +3,15 @@ import { ArrowUpRight, Play } from "lucide-react";
 
 export default function SampleDemoPage() {
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
-      <div className="mx-auto w-full max-w-5xl px-5 py-5 sm:px-8">
+    <main className="app-shell">
+      <div className="app-container max-w-5xl">
         <header className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href="/" className="brand-logo">
             Demodrop
           </Link>
           <Link
             href="/manage/sample"
-            className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            className="btn-secondary h-10 px-4 text-sm"
           >
             Manage sample
           </Link>
@@ -19,21 +19,21 @@ export default function SampleDemoPage() {
 
         <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_360px]">
           <div>
-            <p className="text-sm font-medium text-teal-700">Public demo</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-normal sm:text-5xl">
+            <p className="page-eyebrow">Public demo</p>
+            <h1 className="page-title mt-2">
               InboxPilot
             </h1>
-            <p className="mt-3 max-w-2xl text-lg leading-8 text-stone-600">
+            <p className="body-copy mt-3 max-w-2xl text-lg">
               AI triage for busy support inboxes.
             </p>
 
-            <div className="mt-6 rounded-lg border border-stone-200 bg-white p-3 shadow-sm">
-              <div className="flex aspect-video min-h-56 items-center justify-center rounded-md bg-[linear-gradient(135deg,#292524,#0f766e)] text-white">
+            <div className="surface-card mt-6 p-3">
+              <div className="flex aspect-video min-h-56 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#0B0F0E,#243028)] text-white">
                 <div className="text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-stone-950 shadow-lg">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#A3FF12] text-[#101412] shadow-lg">
                     <Play size={26} fill="currentColor" />
                   </div>
-                  <p className="mt-4 text-sm font-medium text-stone-200">
+                  <p className="mt-4 text-sm font-semibold text-[#DDE6D8]">
                     Video placeholder
                   </p>
                 </div>
@@ -42,23 +42,23 @@ export default function SampleDemoPage() {
           </div>
 
           <aside className="space-y-4">
-            <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-              <h2 className="text-lg font-semibold">Quick feedback</h2>
+            <div className="surface-card p-4">
+              <h2 className="section-title">Quick feedback</h2>
               <div className="mt-4 space-y-4">
                 <FeedbackScale label="How clear was the demo?" />
                 <FeedbackScale label="How interested are you?" />
                 <label className="block">
-                  <span className="text-sm font-medium text-stone-700">
+                  <span className="label-text">
                     What is still unclear?
                   </span>
                   <textarea
-                    className="mt-2 min-h-28 w-full resize-none rounded-md border border-stone-300 bg-white p-3 text-sm outline-none placeholder:text-stone-400 focus:border-teal-700 focus:ring-4 focus:ring-teal-100"
+                    className="input-control mt-2 min-h-28 resize-none p-3 text-sm"
                     placeholder="Write a short reaction..."
                   />
                 </label>
                 <button
                   type="button"
-                  className="h-11 w-full rounded-md bg-stone-950 px-4 text-sm font-medium text-white hover:bg-stone-800"
+                  className="btn-primary h-11 w-full px-4 text-sm"
                 >
                   Send feedback
                 </button>
@@ -67,7 +67,7 @@ export default function SampleDemoPage() {
 
             <a
               href="https://example.com"
-              className="flex h-12 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800"
+              className="btn-primary h-12 px-4 text-sm"
             >
               Visit product
               <ArrowUpRight size={17} />
@@ -75,7 +75,7 @@ export default function SampleDemoPage() {
           </aside>
         </section>
 
-        <footer className="py-10 text-center text-sm text-stone-500">
+        <footer className="py-10 text-center text-sm text-[#C7CEC5]">
           Made with Demodrop
         </footer>
       </div>
@@ -86,13 +86,13 @@ export default function SampleDemoPage() {
 function FeedbackScale({ label }: { label: string }) {
   return (
     <fieldset>
-      <legend className="text-sm font-medium text-stone-700">{label}</legend>
+      <legend className="label-text">{label}</legend>
       <div className="mt-2 grid grid-cols-5 gap-2">
         {[1, 2, 3, 4, 5].map((value) => (
           <button
             key={value}
             type="button"
-            className="h-10 rounded-md border border-stone-200 bg-[#fbfaf7] text-sm font-medium text-stone-800 hover:border-teal-700"
+            className="choice-button h-10"
           >
             {value}
           </button>

@@ -33,7 +33,7 @@ export function TrackedVideo({
 }: TrackedVideoProps) {
   return (
     <video
-      className="aspect-video min-h-56 w-full rounded-md bg-stone-950"
+      className="aspect-video min-h-56 w-full rounded-lg bg-[#0B0F0E]"
       src={signedVideoUrl}
       controls
       playsInline
@@ -57,7 +57,7 @@ export function TrackedProductLink({
       target="_blank"
       rel="noreferrer"
       onClick={() => trackEvent(demoId, "cta_click", { slug, url: productUrl })}
-      className="flex h-12 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800"
+      className="btn-primary h-12 px-4 text-sm"
     >
       Visit product
       <ArrowUpRight size={17} />

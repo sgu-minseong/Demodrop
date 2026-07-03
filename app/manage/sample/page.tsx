@@ -32,15 +32,15 @@ const feedback = [
 
 export default function ManageSamplePage() {
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
-      <div className="mx-auto w-full max-w-6xl px-5 py-5 sm:px-8">
+    <main className="app-shell">
+      <div className="app-container">
         <header className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href="/" className="brand-logo">
             Demodrop
           </Link>
           <Link
             href="/d/sample"
-            className="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            className="btn-secondary h-10 px-4 text-sm"
           >
             <ArrowLeft size={16} />
             Public page
@@ -48,17 +48,17 @@ export default function ManageSamplePage() {
         </header>
 
         <section className="mt-10">
-          <p className="text-sm font-medium text-teal-700">Demo analytics</p>
+          <p className="page-eyebrow">Demo analytics</p>
           <div className="mt-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-4xl font-semibold tracking-normal sm:text-5xl">
+              <h1 className="page-title">
                 InboxPilot
               </h1>
-              <p className="mt-3 text-base text-stone-600">
+              <p className="body-copy mt-3">
                 AI triage for busy support inboxes.
               </p>
             </div>
-            <span className="rounded-full border border-stone-300 bg-white px-3 py-1 text-sm text-stone-600">
+            <span className="rounded-full border border-[#A3FF12]/60 bg-[#A3FF12]/10 px-3 py-1 text-sm font-semibold text-[#E8FFD0]">
               Sample data
             </span>
           </div>
@@ -70,16 +70,16 @@ export default function ManageSamplePage() {
             return (
               <div
                 key={metric.label}
-                className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm"
+                className="metric-card p-4"
               >
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-stone-500">
+                  <p className="text-sm font-semibold text-[#6B7280]">
                     {metric.label}
                   </p>
-                  <Icon size={18} className="text-teal-700" />
+                  <Icon size={18} className="text-[#101412]" />
                 </div>
-                <p className="mt-3 text-3xl font-semibold">{metric.value}</p>
-                <p className="mt-1 text-sm text-stone-500">{metric.detail}</p>
+                <p className="metric-value mt-3 text-3xl">{metric.value}</p>
+                <p className="muted-copy mt-1">{metric.detail}</p>
               </div>
             );
           })}
@@ -106,26 +106,26 @@ export default function ManageSamplePage() {
           />
         </section>
 
-        <section className="mt-6 rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+        <section className="surface-card mt-6 p-4">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-xl font-semibold">Feedback</h2>
-              <p className="text-sm text-stone-500">
+              <h2 className="section-title text-xl">Feedback</h2>
+              <p className="muted-copy">
                 Recent reactions from the sample demo page.
               </p>
             </div>
           </div>
-          <div className="mt-4 divide-y divide-stone-200">
+          <div className="mt-4 divide-y divide-[#D9DDD2]">
             {feedback.map((item) => (
               <article key={item.note} className="py-4 first:pt-0 last:pb-0">
                 <div className="flex flex-col justify-between gap-2 sm:flex-row">
-                  <p className="font-medium">{item.name}</p>
+                  <p className="font-semibold text-[#101412]">{item.name}</p>
                   <div className="flex flex-wrap gap-2">
                     <Tag>{item.clear}</Tag>
                     <Tag>{item.interest} interest</Tag>
                   </div>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-stone-600">
+                <p className="muted-copy mt-3">
                   {item.note}
                 </p>
               </article>
@@ -145,18 +145,18 @@ function DistributionCard({
   data: [string, number][];
 }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <h2 className="text-xl font-semibold">{title} distribution</h2>
+    <div className="surface-card p-4">
+      <h2 className="section-title text-xl">{title} distribution</h2>
       <div className="mt-4 space-y-4">
         {data.map(([label, value]) => (
           <div key={label}>
             <div className="mb-2 flex items-center justify-between text-sm">
-              <span className="font-medium text-stone-700">{label}</span>
-              <span className="text-stone-500">{value}%</span>
+              <span className="font-semibold text-[#101412]">{label}</span>
+              <span className="text-[#6B7280]">{value}%</span>
             </div>
-            <div className="h-3 rounded-full bg-stone-100">
+            <div className="progress-track h-3">
               <div
-                className="h-3 rounded-full bg-teal-700"
+                className="progress-fill h-3"
                 style={{ width: `${value}%` }}
               />
             </div>
@@ -169,7 +169,7 @@ function DistributionCard({
 
 function Tag({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full bg-[#f3efe7] px-3 py-1 text-xs font-medium text-stone-700">
+    <span className="rounded-full border border-[#D9DDD2] bg-white px-3 py-1 text-xs font-semibold text-[#101412]">
       {children}
     </span>
   );

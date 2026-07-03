@@ -446,6 +446,29 @@ export default function NewDemoPage() {
     fileInputRef.current?.click();
   }
 
+  function createAnotherDemo() {
+    setProductName("");
+    setTagline("");
+    setProductUrl("");
+    setUploadVideo(null);
+    setStatus("idle");
+    setError("");
+    setRecordingError("");
+    setReadyDemo(null);
+    setCopied("");
+    resetRecordedPreview();
+    setRecordingState("idle");
+    setCountdown(3);
+    setRemainingSeconds(maxRecordingSeconds);
+    chunksRef.current = [];
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    window.scrollTo({ top: 0 });
+  }
+
   async function copyText(label: string, text: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -540,16 +563,72 @@ export default function NewDemoPage() {
   const selectedFileLabel =
     uploadVideo?.source === "file" ? uploadVideo.name : "No file selected";
 
+  if (readyDemo) {
+    return (
+      <main className="app-shell">
+        <div className="mx-auto flex min-h-screen w-full max-w-4xl items-center px-5 py-10 sm:px-8">
+          <section className="w-full">
+            <div className="flex items-center gap-3 text-white">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#A3FF12] text-[#101412]">
+                <CheckCircle2 size={26} />
+              </span>
+              <h1 className="page-title">
+                Your demo is ready.
+              </h1>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              <CopyableLinkBox
+                label="Public link"
+                value={readyDemo.publicUrl}
+                copied={copied === "public"}
+                onCopy={() => copyText("public", readyDemo.publicUrl)}
+                emphasized
+              />
+
+              <CopyableLinkBox
+                label="Manage link"
+                value={readyDemo.manageUrl}
+                copied={copied === "manage"}
+                onCopy={() => copyText("manage", readyDemo.manageUrl)}
+                warning="Save this link. If you lose it, it cannot be recovered."
+              />
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => copyText("launch", launchPost)}
+                className="btn-primary h-12 px-5 text-base"
+              >
+                <Clipboard size={18} />
+                {copied === "launch" ? "Launch post copied" : "Copy launch post"}
+              </button>
+              <button
+                type="button"
+                onClick={createAnotherDemo}
+                className="btn-secondary h-12 px-5 text-base"
+              >
+                <RotateCcw size={18} />
+                Create another demo
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-[#f7f5f0] text-stone-950">
-      <div className="mx-auto w-full max-w-6xl px-5 py-5 sm:px-8">
+    <main className="app-shell">
+      <div className="app-container">
         <header className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href="/" className="brand-logo">
             Demodrop
           </Link>
           <Link
             href="/d/sample"
-            className="rounded-md border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            className="btn-secondary h-10 px-4 text-sm"
           >
             Sample
           </Link>
@@ -557,11 +636,11 @@ export default function NewDemoPage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section>
-            <p className="text-sm font-medium text-teal-700">New demo</p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-normal sm:text-5xl">
+            <p className="page-eyebrow">New demo</p>
+            <h1 className="page-title mt-2">
               Create a shareable product demo.
             </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-stone-600">
+            <p className="body-copy mt-4 max-w-xl">
               Record a 60-second walkthrough, then upload it as a public demo.
             </p>
 
@@ -591,23 +670,23 @@ export default function NewDemoPage() {
                 disabled={isUploading}
               />
 
-              <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+              <div className="surface-card p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-800">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[#A3FF12] text-[#101412]">
                     <FileVideo size={21} />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-stone-900">
+                    <p className="section-title text-sm">
                       Selected video
                     </p>
-                    <p className="mt-1 break-all text-sm text-stone-500">
+                    <p className="muted-copy mt-1 break-all">
                       {uploadVideoLabel}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <p className="text-sm font-medium text-stone-700">
+                  <p className="label-text">
                     Or choose a video file
                   </p>
                   <input
@@ -624,12 +703,12 @@ export default function NewDemoPage() {
                       type="button"
                       onClick={openFilePicker}
                       disabled={isUploading || isRecordingBusy}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 text-sm font-medium text-stone-800 hover:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100"
+                      className="btn-secondary h-11 px-4 text-sm"
                     >
                       <FileVideo size={17} />
                       Choose video file
                     </button>
-                    <p className="min-w-0 break-all text-sm text-stone-500">
+                    <p className="muted-copy min-w-0 break-all">
                       {selectedFileLabel}
                     </p>
                   </div>
@@ -646,7 +725,7 @@ export default function NewDemoPage() {
               <button
                 type="submit"
                 disabled={isUploading || isRecordingBusy}
-                className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-stone-950 px-5 text-base font-medium text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400 sm:w-auto"
+                className="btn-primary mt-2 h-12 w-full px-5 text-base sm:w-auto"
               >
                 {isUploading ? (
                   <LoaderCircle size={18} className="spin-loading" />
@@ -659,11 +738,11 @@ export default function NewDemoPage() {
           </section>
 
           <section className="space-y-4">
-            <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
+            <div className="surface-card p-4">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold">Screen recording</h2>
-                  <p className="mt-1 max-w-xl text-sm leading-6 text-stone-500">
+                  <h2 className="section-title">Screen recording</h2>
+                  <p className="muted-copy mt-1 max-w-xl">
                     {recordingGuide}
                   </p>
                   <div className="mt-3 max-w-xl rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-950">
@@ -677,23 +756,23 @@ export default function NewDemoPage() {
                 />
               </div>
 
-              <div className="relative flex aspect-video min-h-56 items-center justify-center overflow-hidden rounded-md border border-dashed border-stone-300 bg-stone-100">
+              <div className="relative flex aspect-video min-h-56 items-center justify-center overflow-hidden rounded-lg border border-dashed border-[#B9C1B0] bg-white">
                 {recordedPreview ? (
                   <video
-                    className="h-full w-full bg-stone-950 object-contain"
+                    className="h-full w-full bg-[#0B0F0E] object-contain"
                     src={recordedPreview.url}
                     controls
                     playsInline
                   />
                 ) : (
                   <div className="px-4 text-center">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-stone-900 shadow-sm">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#A3FF12] text-[#101412] shadow-sm">
                       <Video size={24} />
                     </div>
-                    <p className="mt-3 font-medium">
+                    <p className="mt-3 font-semibold text-[#101412]">
                       Record your product tab
                     </p>
-                    <p className="mt-1 text-sm text-stone-500">
+                    <p className="muted-copy mt-1">
                       The browser picker controls which screen, window, or tab
                       is shared.
                     </p>
@@ -701,9 +780,9 @@ export default function NewDemoPage() {
                 )}
 
                 {recordingState === "countdown" ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-stone-950/75 text-white">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#0B0F0E]/80 text-white">
                     <div className="text-center">
-                      <p className="text-sm font-medium text-stone-200">
+                      <p className="text-sm font-semibold text-[#DDE6D8]">
                         Recording starts in
                       </p>
                       <p className="mt-2 text-7xl font-semibold">{countdown}</p>
@@ -720,10 +799,10 @@ export default function NewDemoPage() {
               </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
-                <label className="inline-flex h-11 items-center gap-2 rounded-md border border-stone-200 bg-[#fbfaf7] px-3 text-sm font-medium text-stone-800">
+                <label className="inline-flex h-11 items-center gap-2 rounded-md border border-[#D9DDD2] bg-white px-3 text-sm font-semibold text-[#101412]">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 accent-teal-700"
+                    className="h-4 w-4 accent-[#A3FF12]"
                     checked={microphoneEnabled}
                     disabled={isRecordingBusy || isUploading}
                     onChange={(event) => setMicrophoneEnabled(event.target.checked)}
@@ -746,7 +825,7 @@ export default function NewDemoPage() {
                     type="button"
                     onClick={startRecording}
                     disabled={isUploading || isRecordingBusy}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-stone-950 px-4 text-sm font-medium text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
+                    className="btn-primary h-11 px-4 text-sm"
                   >
                     <MonitorUp size={17} />
                     {recordingState === "requesting"
@@ -762,7 +841,7 @@ export default function NewDemoPage() {
                     type="button"
                     onClick={retakeRecording}
                     disabled={isUploading}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-4 text-sm font-medium text-stone-800 hover:bg-stone-50 disabled:cursor-not-allowed disabled:bg-stone-100"
+                    className="btn-secondary h-11 px-4 text-sm"
                   >
                     <RotateCcw size={16} />
                     Retake
@@ -771,7 +850,7 @@ export default function NewDemoPage() {
                     type="button"
                     onClick={useRecordedVideo}
                     disabled={isUploading}
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-teal-300"
+                    className="btn-primary h-11 px-4 text-sm"
                   >
                     <CheckCircle2 size={17} />
                     Use this video
@@ -787,94 +866,105 @@ export default function NewDemoPage() {
               ) : null}
             </div>
 
-            {readyDemo ? (
-              <div className="rounded-lg border border-teal-200 bg-white p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-teal-800">
-                  <CheckCircle2 size={20} />
-                  <h2 className="text-lg font-semibold">Your demo is ready.</h2>
-                </div>
-
-                <div className="mt-4 grid gap-4">
-                  <ResultLink
-                    label="Public link"
-                    description="Share this link so others can watch your demo and leave feedback."
-                    href={readyDemo.publicUrl}
-                    onCopy={() => copyText("public", readyDemo.publicUrl)}
-                    copied={copied === "public"}
-                  />
-
-                  <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 text-amber-900">
-                          <AlertTriangle size={18} className="shrink-0" />
-                          <p className="text-sm font-semibold">Manage link</p>
-                        </div>
-                        <p className="mt-2 text-sm font-medium text-amber-950">
-                          Your private report and management link.
-                        </p>
-                        <div className="mt-3 rounded-md border border-red-200 bg-white p-3 text-sm font-semibold text-red-800">
-                          <p>
-                            Save this manage link. Anyone with this link can view
-                            your report.
-                          </p>
-                          <p className="mt-1">
-                            In this MVP, you cannot recover this link if you lose
-                            it.
-                          </p>
-                        </div>
-                        <a
-                          href={readyDemo.manageUrl}
-                          className="mt-3 block break-all text-sm font-medium text-amber-950 underline decoration-amber-700 underline-offset-4"
-                        >
-                          {readyDemo.manageUrl}
-                        </a>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => copyText("manage", readyDemo.manageUrl)}
-                        className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-amber-400 bg-white px-3 text-sm font-medium text-amber-950 hover:bg-amber-100"
-                      >
-                        <Copy size={16} />
-                        {copied === "manage" ? "Copied" : "Copy"}
-                      </button>
-                    </div>
+            <div className="surface-card p-4">
+              <h2 className="section-title">Feedback preview</h2>
+              <div className="mt-4 space-y-3">
+                {questions.map((question, index) => (
+                  <div
+                    key={question}
+                    className="surface-panel p-3"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                      Question {index + 1}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#101412]">
+                      {question}
+                    </p>
                   </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => copyText("launch", launchPost)}
-                  className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-4 text-sm font-medium text-white hover:bg-teal-800 sm:w-auto"
-                >
-                  <Clipboard size={17} />
-                  {copied === "launch" ? "Launch post copied" : "Copy launch post"}
-                </button>
+                ))}
               </div>
-            ) : (
-              <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-                <h2 className="text-lg font-semibold">Feedback preview</h2>
-                <div className="mt-4 space-y-3">
-                  {questions.map((question, index) => (
-                    <div
-                      key={question}
-                      className="rounded-md border border-stone-200 bg-[#fbfaf7] p-3"
-                    >
-                      <p className="text-xs font-medium text-stone-500">
-                        Question {index + 1}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-stone-900">
-                        {question}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            </div>
           </section>
         </div>
       </div>
     </main>
+  );
+}
+
+function CopyableLinkBox({
+  label,
+  value,
+  copied,
+  onCopy,
+  emphasized = false,
+  warning,
+}: {
+  label: string;
+  value: string;
+  copied: boolean;
+  onCopy: () => void;
+  emphasized?: boolean;
+  warning?: string;
+}) {
+  return (
+    <div
+      className={
+        emphasized
+          ? "rounded-xl border-2 border-[#A3FF12] bg-[#F7F8F4] p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)]"
+          : "surface-card p-4"
+      }
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p
+            className={
+              emphasized
+                ? "text-base font-bold text-[#101412]"
+                : "text-sm font-bold text-[#101412]"
+            }
+          >
+            {label}
+          </p>
+          {warning ? (
+            <div className="mt-2 flex gap-2 text-sm font-semibold leading-6 text-[#6B4E00]">
+              <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+              <p>{warning}</p>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div
+        className={
+          emphasized
+            ? "code-link-box mt-4 flex flex-col gap-3 border border-[#A3FF12] p-4 sm:flex-row sm:items-center"
+            : "code-link-box mt-3 flex flex-col gap-3 border border-[#D9DDD2] p-3 sm:flex-row sm:items-center"
+        }
+      >
+        <code
+          className={
+            emphasized
+              ? "min-w-0 flex-1 break-all font-mono text-base font-bold text-[#101412]"
+              : "min-w-0 flex-1 break-all font-mono text-sm font-semibold text-[#101412]"
+          }
+        >
+          {value}
+        </code>
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label={`Copy ${label.toLowerCase()}`}
+          title={`Copy ${label.toLowerCase()}`}
+          className={
+            emphasized
+              ? "icon-button h-11 w-11 shrink-0 bg-[#A3FF12] text-[#101412] hover:bg-[#8BE600]"
+              : "icon-button h-10 w-10 shrink-0"
+          }
+        >
+          {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -895,13 +985,13 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-stone-700">{label}</span>
+      <span className="label-text">{label}</span>
       <input
         name={name}
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 h-12 w-full rounded-md border border-stone-300 bg-white px-3 text-base outline-none transition placeholder:text-stone-400 focus:border-teal-700 focus:ring-4 focus:ring-teal-100 disabled:cursor-not-allowed disabled:bg-stone-100"
+        className="input-control mt-2 h-12 px-3 text-base"
         placeholder={placeholder}
         disabled={disabled}
       />
@@ -936,7 +1026,7 @@ function RecordingBadge({
 
   if (recordingState === "recorded") {
     return (
-      <span className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-sm font-medium text-teal-800">
+      <span className="inline-flex items-center gap-2 rounded-full border border-[#A3FF12] bg-[#A3FF12]/20 px-3 py-1 text-sm font-semibold text-[#101412]">
         <CheckCircle2 size={15} />
         Preview ready
       </span>
@@ -944,49 +1034,10 @@ function RecordingBadge({
   }
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-stone-100 px-3 py-1 text-sm font-medium text-stone-700">
-      <Circle size={10} fill="currentColor" />
+    <span className="inline-flex items-center gap-2 rounded-full border border-[#D9DDD2] bg-white px-3 py-1 text-sm font-semibold text-[#101412]">
+      <Circle size={10} fill="currentColor" className="text-[#A3FF12]" />
       Ready
     </span>
-  );
-}
-
-function ResultLink({
-  label,
-  description,
-  href,
-  onCopy,
-  copied,
-}: {
-  label: string;
-  description: string;
-  href: string;
-  onCopy: () => void;
-  copied: boolean;
-}) {
-  return (
-    <div className="rounded-md border border-stone-200 bg-[#fbfaf7] p-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-stone-900">{label}</p>
-          <p className="mt-1 text-xs text-stone-500">{description}</p>
-          <a
-            href={href}
-            className="mt-2 block break-all text-sm font-medium text-teal-800 hover:text-teal-900"
-          >
-            {href}
-          </a>
-        </div>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-3 text-sm font-medium text-stone-800 hover:bg-stone-50"
-        >
-          <Copy size={16} />
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-    </div>
   );
 }
 

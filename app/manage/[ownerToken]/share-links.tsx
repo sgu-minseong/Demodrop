@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
+import { CheckCircle2, Copy } from "lucide-react";
 
 type ShareLinksProps = {
   publicUrl: string;
@@ -31,9 +31,9 @@ export function ShareLinks({ publicUrl }: ShareLinksProps) {
   }
 
   return (
-    <section className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <h2 className="text-xl font-semibold">Share links</h2>
-      <p className="mt-2 break-all text-sm font-medium text-teal-800">
+    <section className="surface-card p-4">
+      <h2 className="section-title text-xl">Share links</h2>
+      <p className="brand-link mt-2 break-all text-sm">
         {publicUrl}
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -42,9 +42,13 @@ export function ShareLinks({ publicUrl }: ShareLinksProps) {
             key={item.label}
             type="button"
             onClick={() => copyLink(item.label, item.source)}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-stone-300 bg-white px-3 text-sm font-medium text-stone-800 hover:bg-stone-50"
+            className="btn-secondary h-10 px-3 text-sm"
           >
-            <Copy size={15} />
+            {copied === item.label ? (
+              <CheckCircle2 size={15} />
+            ) : (
+              <Copy size={15} />
+            )}
             {copied === item.label ? "Copied" : item.label}
           </button>
         ))}
