@@ -43,6 +43,9 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
         : "idle",
   );
   const [error, setError] = useState("");
+  const shouldAskConfusingArea =
+    clarity === "Somewhat unclear" || clarity === "I don't get it";
+  const shouldAskObjection = tryIntent === "Maybe" || tryIntent === "No";
 
   async function submitFeedback() {
     if (submitInFlightRef.current || status !== "idle") {
@@ -51,10 +54,25 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
 
     setError("");
 
-    if (!clarity || !tryIntent || !confusingArea || !objection) {
-      setError("Please answer the four quick questions before submitting.");
+    if (!clarity || !tryIntent) {
+      setError("Please answer the first two questions before submitting.");
       return;
     }
+
+    if (shouldAskConfusingArea && !confusingArea) {
+      setError("Please tell us what was confusing.");
+      return;
+    }
+
+    if (shouldAskObjection && !objection) {
+      setError("Please tell us why you might not use it.");
+      return;
+    }
+
+    const resolvedConfusingArea = shouldAskConfusingArea
+      ? confusingArea
+      : "Nothing";
+    const resolvedObjection = shouldAskObjection ? objection : "Other";
 
     submitInFlightRef.current = true;
     setStatus("submitting");
@@ -69,8 +87,8 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
           slug,
           clarity,
           tryIntent,
-          confusingArea,
-          objection,
+          confusingArea: resolvedConfusingArea,
+          objection: resolvedObjection,
           name,
           comment,
         }),
@@ -114,28 +132,58 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
           label="What does this product do?"
           options={clarityOptions}
           value={clarity}
-          onChange={setClarity}
+          onChange={(nextValue) => {
+            setClarity(nextValue);
+            if (nextValue === "Clear") {
+              setConfusingArea("");
+            }
+            setError("");
+          }}
+          size="large"
         />
         <ChoiceGroup
           label="Would you try this product?"
           options={tryOptions}
           value={tryIntent}
-          onChange={setTryIntent}
-        />
-        <ChoiceGroup
-          label="What was confusing?"
-          options={confusingOptions}
-          value={confusingArea}
-          onChange={setConfusingArea}
-        />
-        <ChoiceGroup
-          label="Why might you not use it?"
-          options={objectionOptions}
-          value={objection}
-          onChange={setObjection}
+          onChange={(nextValue) => {
+            setTryIntent(nextValue);
+            if (nextValue === "Yes") {
+              setObjection("");
+            }
+            setError("");
+          }}
+          size="large"
         />
 
-        <label className="block">
+        {shouldAskConfusingArea ? (
+          <div className="feedback-step">
+            <ChoiceGroup
+              label="What was confusing?"
+              options={confusingOptions}
+              value={confusingArea}
+              onChange={(nextValue) => {
+                setConfusingArea(nextValue);
+                setError("");
+              }}
+            />
+          </div>
+        ) : null}
+
+        {shouldAskObjection ? (
+          <div className="feedback-step">
+            <ChoiceGroup
+              label="Why might you not use it?"
+              options={objectionOptions}
+              value={objection}
+              onChange={(nextValue) => {
+                setObjection(nextValue);
+                setError("");
+              }}
+            />
+          </div>
+        ) : null}
+
+        <label className="feedback-step block">
           <span className="label-text">
             Name, optional
           </span>
@@ -148,7 +196,7 @@ export function FeedbackForm({ slug }: FeedbackFormProps) {
           />
         </label>
 
-        <label className="block">
+        <label className="feedback-step block">
           <span className="label-text">
             Leave a comment or suggestion, optional
           </span>
@@ -186,16 +234,24 @@ function ChoiceGroup({
   options,
   value,
   onChange,
+  size = "normal",
 }: {
   label: string;
   options: string[];
   value: string;
   onChange: (value: string) => void;
+  size?: "normal" | "large";
 }) {
   return (
     <fieldset>
       <legend className="label-text">{label}</legend>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div
+        className={
+          size === "large"
+            ? "mt-2 grid gap-2 sm:grid-cols-3"
+            : "mt-2 flex flex-wrap gap-2"
+        }
+      >
         {options.map((option) => {
           const selected = option === value;
 
@@ -204,7 +260,9 @@ function ChoiceGroup({
               key={option}
               type="button"
               onClick={() => onChange(option)}
-              className={`choice-button px-3 py-2 transition ${
+              className={`choice-button ${getChoiceToneClass(option)} ${
+                size === "large" ? "px-3 py-3 text-left" : "px-3 py-2"
+              } transition ${
                 selected
                   ? "choice-button-selected"
                   : ""
@@ -217,6 +275,27 @@ function ChoiceGroup({
       </div>
     </fieldset>
   );
+}
+
+function getChoiceToneClass(option: string) {
+  if (
+    option === "Clear" ||
+    option === "Yes" ||
+    option === "Nothing"
+  ) {
+    return "choice-positive";
+  }
+
+  if (
+    option === "Somewhat unclear" ||
+    option === "Maybe" ||
+    option === "Other" ||
+    option === "Might be expensive"
+  ) {
+    return "choice-neutral";
+  }
+
+  return "choice-negative";
 }
 
 function getApiErrorMessage(data: unknown) {

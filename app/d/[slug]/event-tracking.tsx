@@ -33,7 +33,7 @@ export function TrackedVideo({
 }: TrackedVideoProps) {
   return (
     <video
-      className="aspect-video min-h-56 w-full rounded-lg bg-[#0B0F0E]"
+      className="demo-video aspect-video min-h-56 w-full rounded-lg bg-[#0B0F0E]"
       src={signedVideoUrl}
       controls
       playsInline

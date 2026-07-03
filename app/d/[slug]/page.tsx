@@ -19,6 +19,11 @@ type PublicDemo = {
   product_url: string | null;
   status: string | null;
   video_path: string | null;
+  created_at: string | null;
+};
+
+type EventRow = {
+  event_type: string | null;
 };
 
 const slugPattern = /^[A-Za-z0-9_-]{6,80}$/;
@@ -39,7 +44,7 @@ export default async function PublicDemoPage({
 
   const { data: demo, error } = await supabaseAdmin
     .from("demos")
-    .select("id, product_name, tagline, product_url, status, video_path")
+    .select("id, product_name, tagline, product_url, status, video_path, created_at")
     .eq("slug", slug)
     .maybeSingle<PublicDemo>();
 
@@ -70,6 +75,22 @@ export default async function PublicDemoPage({
       }`,
     );
   }
+
+  const { data: events, error: eventsError } = await supabaseAdmin
+    .from("events")
+    .select("event_type")
+    .eq("demo_id", demo.id);
+
+  if (eventsError) {
+    throw new Error(`Failed to load public demo events: ${eventsError.message}`);
+  }
+
+  const eventCounts = countBy((events ?? []) as EventRow[], (event) =>
+    event.event_type || "",
+  );
+  const views = eventCounts.view || 0;
+  const plays = eventCounts.play || 0;
+  const completions = eventCounts.complete || 0;
 
   return (
     <main className="app-shell">
@@ -104,6 +125,32 @@ export default async function PublicDemoPage({
                 signedVideoUrl={signedVideo.signedUrl}
               />
             </div>
+
+            <div className="mt-4">
+              <TrackedProductLink
+                demoId={demo.id}
+                slug={slug}
+                productUrl={demo.product_url}
+              />
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <MetaItem label="Recorded" value={formatDate(demo.created_at)} />
+              <MetaItem label="Views" value={formatNumber(views)} />
+              <MetaItem
+                label="Plays"
+                value={`${formatNumber(plays)} watched`}
+              />
+            </div>
+
+            <div className="surface-card mt-4 p-4">
+              <p className="text-sm font-semibold text-[#101412]">
+                Launch signal
+              </p>
+              <p className="muted-copy mt-1">
+                {formatNumber(completions)} completed watches so far.
+              </p>
+            </div>
           </div>
 
           <aside className="space-y-4">
@@ -134,4 +181,42 @@ export default async function PublicDemoPage({
       </div>
     </main>
   );
+}
+
+function MetaItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="surface-card p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-bold text-[#A3FF12]">{value}</p>
+    </div>
+  );
+}
+
+function countBy<T>(items: T[], getKey: (item: T) => string) {
+  return items.reduce<Record<string, number>>((counts, item) => {
+    const key = getKey(item);
+
+    if (!key) {
+      return counts;
+    }
+
+    counts[key] = (counts[key] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-US").format(value);
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+  }).format(new Date(value));
 }
